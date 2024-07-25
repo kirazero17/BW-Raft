@@ -2,13 +2,14 @@ package persist
 
 import (
 	"fmt"
-	"github.com/syndtr/goleveldb/leveldb"
 	"log"
+
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 type Persister struct {
 	path string
-	db *leveldb.DB
+	db   *leveldb.DB
 }
 
 func (p *Persister) Init(path string) {
@@ -35,7 +36,7 @@ func (p *Persister) Get(key string) string {
 	return string(value)
 }
 
-func (p *Persister) Close()  {
+func (p *Persister) Close() {
 	err := p.db.Close()
 	if err != nil {
 		log.Fatalln(err)

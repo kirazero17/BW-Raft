@@ -1,20 +1,21 @@
-package main
+package observer
 
 import (
-	RPC "../RPC"
 	"flag"
 	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"net"
 	"strings"
 	"time"
+
+	RPC "../RPC"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 type Observer struct {
 	address string
 	//处理read请求时直接从某个能正常连接的Follower的persist中去读
-	cluster[] string
+	cluster []string
 }
 
 func (ob *Observer) WriteRequest(ctx context.Context, args *RPC.WriteArgs) (*RPC.WriteReply, error) {
@@ -27,7 +28,7 @@ func (ob *Observer) ReadRequest(ctx context.Context, readArgs *RPC.ReadArgs) (*R
 	readReply := &RPC.ReadReply{}
 	n := len(ob.cluster)
 	for i := 0; i < n; i++ {
-		arg := &RPC.GetValueArgs{Key:readArgs.Key} // 50002端口
+		arg := &RPC.GetValueArgs{Key: readArgs.Key} // 50002端口
 		success, getValueReply := ob.judgeConnect(ob.cluster[i], arg)
 		if success { //未连接超时
 			fmt.Printf("\nObserver-%s 和 Cluster-%s 连接成功，返回结果%s-%s·········\n\n", ob.address, ob.cluster[i], readArgs.Key, getValueReply.Value)
@@ -40,7 +41,7 @@ func (ob *Observer) ReadRequest(ctx context.Context, readArgs *RPC.ReadArgs) (*R
 
 func (ob *Observer) judgeConnect(address string, args *RPC.GetValueArgs) (bool, *RPC.GetValueReply) {
 	// Connect RPC 的client端
-	address = address+"2" //50002
+	address = address + "2" //50002
 	conn, err1 := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err1 != nil {
 		fmt.Println(err1)
@@ -57,7 +58,7 @@ func (ob *Observer) judgeConnect(address string, args *RPC.GetValueArgs) (bool, 
 	defer cancel()
 	reply, err3 := client.GetValue(ctx, args)
 	if err3 != nil {
-		fmt.Println("接受Connect结果失败:",err3)
+		fmt.Println("接受Connect结果失败:", err3)
 		return false, reply
 	}
 	return true, reply
@@ -87,6 +88,6 @@ func main() {
 		address: address,
 		cluster: cluster,
 	}
-	ob.registerServer(address+"1")
+	ob.registerServer(address + "1")
 	time.Sleep(time.Minute * 10)
 }
